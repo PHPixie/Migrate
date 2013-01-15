@@ -1,4 +1,10 @@
 <?php
+/**
+ * PDO driver for Migrate. MySQL support only for now.
+ * 
+ * @link https://github.com/dracony/PHPixie-Migrate Download this module from Github
+ * @package    Migrate
+ */
 class PDO_Migrate extends Migrate {
 	
 	/**
