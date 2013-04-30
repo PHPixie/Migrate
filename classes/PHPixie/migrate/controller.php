@@ -15,7 +15,7 @@ abstract class Controller extends \PHPixie\Controller {
 	
 	/**
 	 * Main migrations page
-	 * /
+	 */
 	public function action_index() {
 
 		if ($this->request->method == 'POST') {
