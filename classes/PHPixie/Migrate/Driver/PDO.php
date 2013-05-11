@@ -80,6 +80,15 @@ class PDO extends \PHPixie\Migrate\Migrator {
 		}
 		
 		$str = strtoupper($def['type'])." ";
+		if ($type == 'enum') {
+			$options = '';
+			foreach($def['options'] as $key => $val) {
+				if ($key > 0)
+					$options.= ',';
+				$options.="'$val'";
+			}
+			$str.="($options) ";
+		}
 		
 		if(isset($def['size']))
 			$str.= "({$def['size']}) ";
