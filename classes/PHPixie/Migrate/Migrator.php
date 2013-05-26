@@ -61,7 +61,9 @@ abstract class Migrator {
 		$this->path            = $this->pixie->config->get("migrate.{$config}.path");
 		$this->current_version = $this->pixie->config->get("migrate.{$config}.current_version", null);
 		$this->versions=array();
-		foreach(scandir($this->pixie->root_dir.$this->path) as $file){
+		$files = scandir($this->pixie->root_dir.$this->path);
+		natsort($files);
+		foreach($files as $file){
 			if($file[0]=='.')
 				continue;
 			$path_parts = pathinfo($file);	
