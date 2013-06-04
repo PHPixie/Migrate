@@ -141,7 +141,17 @@ abstract class Migrator {
 			$rules = array_reverse($rules);
 		$this->pixie->debug->log($rules);
 		foreach($rules as $table => $columns) {
-
+			
+			$data_updates = null;
+			
+			if (isset($columns['_data'])) {
+				$data_updates = $this->pixie->arr($columns['_data'], $direction);
+				unset($columns['_data']);
+			}
+			
+			if ($data_updates && $direction=='down')
+				$this->update_table_data($table, $data_updates);
+				
 			if ($columns=='drop'&&$direction=='up') {
 				$this->drop_table($table);
 				continue;
@@ -181,6 +191,7 @@ abstract class Migrator {
 				continue;
 			}
 			
+				
 			foreach($columns as $name => $def) {
 			
 				if ($direction == 'up' && $def == 'drop')
@@ -218,8 +229,12 @@ abstract class Migrator {
 				if(isset($target_schema[$target_table][$target_name]))
 					$columns[$name] = array_merge($columns[$name],$target_schema[$target_table][$target_name]);
 			}
-			$this->pixie->debug->log(array($target_table, $columns));
+			
+			$this->pixie-> debug->log(array($target_table, $columns));
 			$this->alter_columns($target_table, $columns);
+			if ($data_updates && $direction=='up')
+				$this->update_table_data($table, $data_updates);
+			
 			
 		}
 		
@@ -247,6 +262,9 @@ abstract class Migrator {
 				
 				if(!isset($schema[$table]))
 					$schema[$table] = array();
+				
+				if (isset($columns['_data']))
+					unset($columns['_data']);
 					
 				if (isset($columns['rename'])) {
 					echo($columns['rename']);
@@ -275,6 +293,35 @@ abstract class Migrator {
 				break;
 		}
 		return $schema;
+	}
+	
+	/**
+	 * Process table data updates
+	 *
+	 * @param  string  $table     Name of the table to update
+	 * @param  array   $data      Update rules. An associative array
+	 *                            Containing optional 'insert', 'update' and 'delete' rules.
+	 * @return void
+	 */
+	protected function update_table_data($table, $data) {
+		foreach ($this->pixie->arr($data, 'insert', array()) as $insert) 
+			$this->_db->query('insert')
+				->table($table)
+				->data($insert)
+				->execute();
+		
+		foreach ($this->pixie->arr($data, 'update', array()) as $update) 
+			$this->_db->query('update')
+				->table($table)
+				->data($update['data'])
+				->where($update['conds'])
+				->execute();
+		
+		foreach ($this->pixie->arr($data, 'delete', array()) as $delete) 
+			$this->_db->query('delete')
+				->table($table)
+				->where($delete)
+				->execute();
 	}
 	
 	/**
