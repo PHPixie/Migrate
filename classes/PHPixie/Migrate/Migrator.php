@@ -149,7 +149,7 @@ abstract class Migrator {
 				unset($columns['_data']);
 			}
 			
-			if ($data_updates && $direction=='down')
+			if (!empty($data_updates) && $direction=='down')
 				$this->update_table_data($table, $data_updates);
 				
 			if ($columns=='drop'&&$direction=='up') {
@@ -183,9 +183,7 @@ abstract class Migrator {
 				unset($columns['rename']);
 			}
 			
-			if (empty($columns))
-				continue;
-	
+				
 			if (!$renamed&&!isset($current_schema[$table])){
 				$this->create_table($table, $target_schema[$target_table]);
 				continue;
@@ -231,8 +229,10 @@ abstract class Migrator {
 			}
 			
 			$this->pixie-> debug->log(array($target_table, $columns));
-			$this->alter_columns($target_table, $columns);
-			if ($data_updates && $direction=='up')
+			if(!empty($columns))
+				$this->alter_columns($target_table, $columns);
+			
+			if (!empty($data_updates) && $direction=='up')
 				$this->update_table_data($table, $data_updates);
 			
 			
@@ -304,7 +304,8 @@ abstract class Migrator {
 	 * @return void
 	 */
 	protected function update_table_data($table, $data) {
-		foreach ($this->pixie->arr($data, 'insert', array()) as $insert) 
+		
+		foreach ($this->pixie-> arr($data, 'insert', array()) as $insert) 
 			$this->_db->query('insert')
 				->table($table)
 				->data($insert)
