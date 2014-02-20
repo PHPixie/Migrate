@@ -18,10 +18,10 @@ class PDO extends \PHPixie\Migrate\Migrator {
 	 */
 	public function __construct($pixie, $config = 'default') {
 		parent::__construct($pixie, $config);
-		if ($this->_db->db_type != 'mysql')
-			throw new \Exception("Migrate currently supports MySQL databases only.");
+		if (!in_array($this->_db->db_type, array('mysql', 'pgsql'), true))
+			throw new \Exception("Migrate currently supports MySQL and Postgresql databases only.");
 	}
-	
+
 	/**
 	 * Renames a table
 	 *
@@ -75,10 +75,10 @@ class PDO extends \PHPixie\Migrate\Migrator {
 		$type = $def['type'];
 		$db_type=$this->_db->db_type;
 		if ($type == 'id') {
-			$def['type'] = 'INTEGER';
+			$def['type'] = $db_type=='mysql'?'INTEGER':'SERIAL';
 			$def['primary']=true;
 		}
-		
+
 		$str = strtoupper($def['type'])." ";
 		if ($type == 'enum') {
 			$options = '';
@@ -89,25 +89,25 @@ class PDO extends \PHPixie\Migrate\Migrator {
 			}
 			$str.="($options) ";
 		}
-		
+
 		if(isset($def['size']))
 			$str.= "({$def['size']}) ";
-			
+
 		if (!empty($def['not_null']) && empty($def['primary']))
 			$str.= "NOT NULL ";
-			
+
 		if (isset($def['default']))
-			$str.= "DEFAULT {$def['default']} ";	
-		
-		if ($db_type = 'mysql' && $type == 'id')
-			$str.= "AUTO_INCREMENT ";	
-			
+			$str.= "DEFAULT {$def['default']} ";
+
+		if ($db_type == 'mysql' && $type == 'id')
+			$str.= "AUTO_INCREMENT ";
+
 		if (!empty($def['primary'])&&$with_keys)
-			$str.= "PRIMARY KEY ";	
-		
+			$str.= "PRIMARY KEY ";
+
 		return $str;
 	}
-	
+
 	/**
 	 * Alters table columns
 	 *
