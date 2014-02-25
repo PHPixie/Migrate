@@ -3,6 +3,7 @@
 	<head>
 		<title>Migrate - PHPixie</title>
 		<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 		<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
 		<style>
 			form{
@@ -23,9 +24,9 @@
 						<th>Apply</th>
 					</thead>
 					<tbody>
-						
+
 						<?php 	$new=true;
-								foreach(array_reverse($migrate->versions) as $version): 
+								foreach(array_reverse($migrate->versions) as $version):
 									$text  = $new?'Update to Revision':'Revert to Revision';
 									$class = $new?'btn-success':'btn-warning';
 									$icon =  $new?'icon-arrow-up':'icon-arrow-down';
@@ -41,18 +42,18 @@
 														<i class="<?php echo $icon;?>"></i> <?php echo $text;?>
 													</button>
 												</form>
-												
-											<?php else: 
+
+											<?php else:
 												$new=false;
 											?>
-												
+
 												<span class="label label-success">Current Revision</span>
-												
+
 											<?php endif;?>
 										</td>
 									</tr>
 						<?php endforeach;?>
-						
+
 					</tbody>
 				</table>
 			<?php endforeach;?>
