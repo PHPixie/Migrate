@@ -99,7 +99,7 @@ class PDO extends \PHPixie\Migrate\Migrator {
 		if (isset($def['default']))
 			$str.= "DEFAULT {$def['default']} ";	
 		
-		if ($db_type = 'mysql' && $type == 'id')
+		if ($db_type == 'mysql' && $type == 'id')
 			$str.= "AUTO_INCREMENT ";	
 			
 		if (!empty($def['primary'])&&$with_keys)
