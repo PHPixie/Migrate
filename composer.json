@@ -1,0 +1,33 @@
+{
+    "name": "phpixie/migrate",
+    "description": "PHPixie migrations component",
+    "keywords": ["migrate", "migration"],
+    "homepage": "http://phpixie.com",
+    "type": "library",
+    "license": "BSD",
+    "authors": [
+        {
+            "name": "Roman Tsiupa",
+            "email": "draconyster@gmail.com",
+            "homepage": "http://dracony.org"
+        }
+    ],
+    "require": {
+        "phpixie/console": "~3.3",
+        "phpixie/database": "~3.2"
+    },
+    "require-dev": {
+        "phpixie/test": "~3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "PHPixie\\": "src/PHPixie",
+            "PHPixie\\Tests\\": "tests/PHPixie/Tests"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "3.x-dev"
+        }
+    }
+}
