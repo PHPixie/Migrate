@@ -7,20 +7,66 @@ use PDO;
 
 abstract class Adapter
 {
-    abstract public function dropDatabase(Data $config);
-    abstract public function createDatabase(Data $config);
-
-    protected function buildPdo($dsn, Data $config)
+    protected $config;
+    protected $defaultMigrationTable = '__migrate';
+    
+    public function __construct($config)
     {
-        $pdo = new PDO(
+        $this->config = $config;
+    }
+    
+    protected function getLastMigration()
+    {
+        $table = $this->requireMigrationTable();
+        $result = $this->execute("SELECT lastMigration FROM $table")->fetchColumn();
+        $last = empty($result) ? null : $result[0];
+        return $last;
+    }
+    
+    protected function setLastMigration($migration)
+    {
+        $table = $this->requireMigrationTable();
+        $rows = $this->execute("SELECT lastMigration FROM $table")->fetchColumn();
+        
+        if(count($rows) == 0) {
+            $this->execute("INSERT INTO $table VALUES('$migration')");
+            return;
+        }
+        
+        $this->execute("UPDATE $table SET lastMigration='$migration'");
+    }
+    
+    public function execute($query)
+    {
+        return $this->pdo()->query($query);
+    }
+    
+    public function pdo()
+    {
+        if($this->pdo === null) {
+            $this->pdo = $this->buildPdo($this->dsn())
+        }
+    }
+    
+    public function disconnect()
+    {
+        $this->pdo = null;
+    }
+    
+    protected function buildPdo($dsn)
+    {
+        new PDO(
             $dsn,
-            $config->get('user',''),
-            $config->get('password', ''),
-            $config->get('connectionOptions', array())
+            $this->config->get('user',''),
+            $this->config->get('password', ''),
+            $this->config->get('connectionOptions', array())
         );
-
+            
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
         return $pdo;
     }
+    
+    abstract public function dsn();
+    abstract public function dropDatabase()
+    abstract public function createDatabase();
 }

@@ -9,19 +9,21 @@ class Sqlite extends Adapter
 {
     public function dropDatabase(Data $config)
     {
-        $file = $config->getRequired('file');
-        unlink($file);
+        $this->disconnect();
+        $file = $this->config->getRequired('file');
+        file_put_contents($file, '');
     }
 
     public function createDatabase(Data $config)
     {
-        $pdo = $this->buildPdo(
-            'sqlite:'.$config->getRequired('file'),
-            $config
-        );
-
-        $pdo->exec("CREATE TABLE IF NOT EXISTS phpixieMigrations(
+        $this->execute("CREATE TABLE IF NOT EXISTS phpixieMigrations(
             lastMigration VARCHAR(255)
         )");
+    }
+    
+    protected function dsn($withDatabase = true)
+    {
+        $dsn = 'sqlite:'.$this->config->getRequired('file');
+        return $dsn;
     }
 }

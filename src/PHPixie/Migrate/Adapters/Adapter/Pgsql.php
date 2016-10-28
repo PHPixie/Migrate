@@ -3,42 +3,49 @@
 namespace PHPixie\Migrate\Adapters\Adapter;
 
 use PHPixie\Migrate\Adapters\Adapter;
-use PHPixie\Slice\Data;
 
 class Pgsql extends Adapter
 {
-    public function dropDatabase(Data $config)
+    public function dropDatabase()
     {
-        $pdo = $this->buildPdo(
-            $this->buildDsn($config),
-            $config
-        );
+        $this->disconnect();
+        $pdo = $this->buildPdo($this->dsn(false));
 
-        $database = $config->getRequired('database');
+        $database = $this->config->getRequired('database');
         $pdo->exec("DROP DATABASE IF EXISTS \"$database\"");
     }
 
-    public function createDatabase(Data $config)
+    public function createDatabase()
     {
-        $pdo = $this->buildPdo(
-            $this->buildDsn($config),
-            $config
-        );
+        $this->disconnect();
+        $pdo = $this->buildPdo($this->dsn(false));
 
-        $database = $config->getRequired('database');
+        $database = $this->config->getRequired('database');
         $pdo->exec("CREATE DATABASE IF NOT EXISTS \"$database\"");
-        $pdo->exec("USE \"$database\"");
-        $pdo->exec("CREATE TABLE IF NOT EXISTS phpixieMigrations(
-            lastMigration VARCHAR(255)
-        )");
     }
 
-    /**
-     * @param Data $config
-     * @return string
-     */
-    protected function buildDsn(Data $config)
+    public function dsn($withDatabase = true)
     {
-        return 'pgsql:host='.$config->get('host', 'localhost');
+        $dsn = 'pgsql:';
+        
+        $dsn.='host='.$this->config->get('host', 'localhost');
+        $dsn.=';port='.$this->config->get('port', '3306');
+        
+        if($withDatabase) {
+            $dsn.=';dbname='.$this->config->getRequired('database');
+        }
+        
+        return $dsn;
+    }
+    
+    protected function requireMigrationTable();
+    {
+        $table = $this->config->get('table', $this->defaultMigrationTable);
+;
+        $pdo->exec("CREATE TABLE IF NOT EXISTS $table(
+            lastMigration VARCHAR(255)
+        )");
+        
+        return $table;
     }
 }

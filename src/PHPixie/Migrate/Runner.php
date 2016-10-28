@@ -2,80 +2,58 @@
 
 namespace PHPixie\Migrate;
 
-use PHPixie\Database\Connection;
-use PHPixie\Slice\Data;
+use PHPixie\Console\Exception\CommandException;
 
 class Runner
 {
-    /**
-     * @var Builder
-     */
-    protected $builder;
-
-    public function createDatabase($connectionName)
+    protected $adapter;
+    protected $output;
+    
+    public function __construct($adapter, $output)
     {
-        $config = $this->config($connectionName);
-
-        $adapter = $this->builder->adapter(
-            $config->getRequired('adapter')
-        );
-
-        $adapter->createDatabase($config);
+        $this->adapter = $adapter;
+        $this->output = $output;
     }
-
-    public function dropDatabase($connectionName)
+    
+    public function run($file)
     {
-        $config = $this->config($connectionName);
-
-        $adapter = $this->builder->adapter(
-            $config->getRequired('adapter')
-        );
-
-        $adapter->dropDatabase($config);
+        $basename = patinfo($file, PATHINFO_BASENAME);
+        $extension = strtolower(patinfo($file, PATHINFO_BASENAME));
+        
+        if(!in_array($extension, array('php', 'sql'))) {
+            throw new CommandException("Migration $basename is neither a .php nor a .sql file");
+        }
+        
+        $this->cliContext->writeLine("Running $basename");
+        $method = 'run'.ucfirst($extension).'Migration';
+        $this->$method($file);
     }
-
-    public function migrate(Data $config)
+    
+    public function runPhpMigration($file)
     {
-        $connection = $this->connection($config);
-
-        $last = $connection->selectQuery()
-            ->table('phpixieMigrations')
-            ->limit(1)
-            ->execute()
-            ->getField('lastMigration');
-
-        $last = !empty($last) ? $last[0] : null;
-        $iterator = new \RecursiveDirectoryIterator(
-            $config->getRequired('migrationsPath')
-        );
-
-        $namespace = $config->getRequired('namespace');
-
-        foreach($iterator as $file) {
-            $class = $file->getBasename('.php');
-            $class = $namespace."\\".$class;
-
-            $migration = new $class();
-            $migration->run();
+        require $file;
+    }
+    
+    public function runSqlMigration($file)
+    {
+        $sql = file_get_contents($file);
+        $statements = preg_split("#^--statement#", $sql);
+        
+        foreach($statements as $sql) {
+            $sql = trim($sql);
+            $sql = rtrim($sql, ';');
+            $this->execute($sql);
         }
     }
-
-    /**
-     * @param string $connectionName
-     * @return Data
-     */
-    protected function config($connectionName)
+    
+    public function execute($sql)
     {
-        $database = $this->builder->database();
-        return $database->connectionConfig($connectionName);
+        $this->output->sql($sql);
+        return $this->adapter->execute($sql);
     }
-
-    /**
-     * @param string $connectionName
-     * @return Connection
-     */
-    protected function connection($connectionName)
+    
+    public function write($string)
     {
-        return $this->builder->database()->connection($connectionName);
+        $this->output->message($sql);
     }
 }
