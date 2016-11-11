@@ -1,6 +1,6 @@
 <?php
 
-namespace PHPixie\Migrate\Migrator;
+namespace PHPixie\Migrate;
 
 interface Output
 {

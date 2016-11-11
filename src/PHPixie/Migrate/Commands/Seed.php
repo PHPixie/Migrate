@@ -10,7 +10,7 @@ use PHPixie\Slice\Data;
 use PHPixie\Migrate\Exception;
 use PHPixie\Console\Exception\CommandException;
 
-class Run extends Command
+class Seed extends Command
 {
     /**
      * @var Builder
@@ -21,9 +21,13 @@ class Run extends Command
     {
         $this->builder = $builder;
         
-        $config->description("Run migrations on the database");
+        $config->description("Seed the database with data");
         $config->argument('config')
-            ->description("Migration configuration name, defaults to 'default'");
+            ->description("Seed configuration name, defaults to 'default'");
+        
+        $config->option('truncate')
+            ->flag()
+            ->description("Truncate the tables before inserting the data.");
 
         parent::__construct($config);
     }
@@ -31,22 +35,16 @@ class Run extends Command
     public function run($argumentData, $optionData)
     {
         $configName = $argumentData->get('config', 'default');
-        $migrator = $this->builder->migrator($configName);
+        $seeder = $this->builder->seeder($configName);
         
         $output = $this->builder->cliOutput($this->cliContext());
         
         try{
-            $executed = $migrator->migrate($output);
+            $seeder->seed($output, $optionData->get('truncate', false));
         } catch (Exception $e) {
             throw new CommandException($e->getMessage());
         }
         
-        if(empty($executed)) {
-            $this->writeLine("Already on latest version.");
-            return;
-        }
-        
-        $count = count($executed);
-        $this->writeLine("Applied $count migration(s)");
+        $this->writeLine("Seed data successfully inserted.");
     }
 }

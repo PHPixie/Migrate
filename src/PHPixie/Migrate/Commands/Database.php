@@ -8,6 +8,7 @@ use PHPixie\Database\Connection;
 use PHPixie\Migrate\Builder;
 use PHPixie\Slice\Data;
 use PHPixie\Migrate\Exception;
+use PHPixie\Console\Exception\CommandException;
 
 class Database extends Command
 {
@@ -20,6 +21,8 @@ class Database extends Command
     {
         $this->builder = $builder;
         
+        $config->description("Create or drop a database");
+        
         $config->argument('action')
             ->required()
             ->description("Either 'create' or 'drop'");
@@ -27,14 +30,14 @@ class Database extends Command
         $config->argument('config')
             ->description("Migration configuration name, defaults to 'default'");
         
-        $config->option('--drop')
+        $config->option('drop')
             ->flag()
             ->description("A safety flag aims to prevent accidental dropping of the database");
 
         parent::__construct($config);
     }
 
-    public function run(Data $optionData, Data $argumentData)
+    public function run($argumentData, $optionData)
     {
         $configName = $argumentData->get('config', 'default');
         $migrator = $this->builder->migrator($configName);
@@ -48,13 +51,13 @@ class Database extends Command
         $this->$action($migrator, $optionData);
     }
     
-    protected function create($migrator, Data $optionData)
+    protected function create($migrator, $optionData)
     {
         $migrator->createDatabase();
         $this->writeLine("Database succesfully created or already exists");
     }
     
-    protected function drop($migrator, Data $optionData)
+    protected function drop($migrator, $optionData)
     {
         if(!$optionData->get('drop')) {
             throw new CommandException("If you really want to drop the database rerun this command with --drop");

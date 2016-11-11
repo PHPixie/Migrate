@@ -7,23 +7,27 @@ use PHPixie\Slice\Data;
 
 class Sqlite extends Adapter
 {
-    public function dropDatabase(Data $config)
+    protected $quoteCharacter = '"';
+    
+    public function dropDatabase()
     {
-        $this->disconnect();
-        $file = $this->config->getRequired('file');
-        file_put_contents($file, '');
+        $this->connection->disconnect();
+        
+        $config = $this->connection->config();
+        $file = $config->getRequired('file');
+        
+        if(file_exists($file)) {
+            file_put_contents($file, '');
+        }
     }
 
-    public function createDatabase(Data $config)
+    public function createDatabase()
     {
-        $this->execute("CREATE TABLE IF NOT EXISTS phpixieMigrations(
-            lastMigration VARCHAR(255)
-        )");
+        
     }
     
-    protected function dsn($withDatabase = true)
+    public function truncateTable($table)
     {
-        $dsn = 'sqlite:'.$this->config->getRequired('file');
-        return $dsn;
+        $this->execute('DELETE FROM '.$this->quote($table));
     }
 }

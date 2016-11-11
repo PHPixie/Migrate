@@ -7,66 +7,127 @@ use PDO;
 
 abstract class Adapter
 {
-    protected $config;
-    protected $defaultMigrationTable = '__migrate';
+    protected $connection;
     
-    public function __construct($config)
+    protected $quoteCharacter;
+    
+    protected $defaultMigrationTable = '__migrate';
+    protected $lastMigrationField = 'lastMigration';
+    
+    public function __construct($connection)
     {
-        $this->config = $config;
+        $this->connection = $connection;
     }
     
-    protected function getLastMigration()
+    protected function quote($str)
+    {
+        return $this->quoteCharacter.$str.$this->quoteCharacter;
+    }
+    
+    public function getLastMigration()
     {
         $table = $this->requireMigrationTable();
-        $result = $this->execute("SELECT lastMigration FROM $table")->fetchColumn();
-        $last = empty($result) ? null : $result[0];
+        
+        $lastMigration = $this->connection->selectQuery()
+            ->table($table)
+            ->fields(array($this->lastMigrationField))
+            ->execute()
+            ->getField($this->lastMigrationField);
+        
+        $last = empty($lastMigration) ? null : $lastMigration[0];
         return $last;
     }
     
-    protected function setLastMigration($migration)
+    public function setLastMigration($migration)
     {
         $table = $this->requireMigrationTable();
-        $rows = $this->execute("SELECT lastMigration FROM $table")->fetchColumn();
         
-        if(count($rows) == 0) {
-            $this->execute("INSERT INTO $table VALUES('$migration')");
+        $lastMigration = $this->connection->selectQuery()
+            ->table($table)
+            ->fields(array($this->lastMigrationField))
+            ->execute()
+            ->getField($this->lastMigrationField);
+        
+        if(count($lastMigration) === 0) {
+            $this->connection->insertQuery()
+                ->table($table)
+                ->data(array(
+                    $this->lastMigrationField => $migration
+                ))
+                ->execute();
             return;
         }
         
-        $this->execute("UPDATE $table SET lastMigration='$migration'");
+        $this->connection->updateQuery()
+            ->table($table)
+            ->set(array(
+                $this->lastMigrationField => $migration
+            ))
+            ->execute();
     }
     
-    public function execute($query)
+    public function truncateTable($table)
     {
-        return $this->pdo()->query($query);
+        $this->execute('TRUNCATE TABLE '.$this->quote($table));
     }
     
-    public function pdo()
+    public function isTableEmpty($table)
     {
-        if($this->pdo === null) {
-            $this->pdo = $this->buildPdo($this->dsn())
+        $count = $this->connection->countQuery()
+            ->table($table)
+            ->execute();
+        
+        return $count == 0;
+    }
+    
+    public function insertData($table, $data) {
+        foreach($data as $row) {
+            $this->connection->insertQuery()
+                ->table($table)
+                ->data($row)
+                ->execute();
         }
     }
     
-    public function disconnect()
+    public function execute($query, $params = array())
     {
-        $this->pdo = null;
+        return $this->connection->execute($query, $params);
     }
     
-    protected function buildPdo($dsn)
+    public function dropDatabase()
     {
-        new PDO(
-            $dsn,
-            $this->config->get('user',''),
-            $this->config->get('password', ''),
-            $this->config->get('connectionOptions', array())
-        );
-            
-        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        return $pdo;
+        $this->connection->disconnect();
+        $pdo = $this->connection->buildPdo(false);
+        
+        $config = $this->connection->config();
+        $database = $config->getRequired('database');
+        
+        $pdo->exec('DROP DATABASE IF EXISTS '.$this->quote($database));
     }
     
-    abstract public function dsn();
-    abstract public function dropDatabase()
-    abstract public function createDatabase();
+    public function createDatabase()
+    {
+        $this->connection->disconnect();
+        $pdo = $this->connection->buildPdo(false);
+        
+        $config = $this->connection->config();
+        $database = $config->getRequired('database');
+        
+         $pdo->exec('CREATE DATABASE IF NOT EXISTS '.$this->quote($database));
+    }
+    
+    protected function requireMigrationTable()
+    {
+        $config = $this->connection->config();
+        $table = $config->get('table', $this->defaultMigrationTable);
+        
+        $this->execute(sprintf("CREATE TABLE IF NOT EXISTS %s(
+                %s VARCHAR(255)
+            )",
+            $this->quote($table),
+            $this->quote($this->lastMigrationField)
+        ));
+        
+        return $table;
+    }
 }

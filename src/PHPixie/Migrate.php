@@ -6,9 +6,9 @@ class Migrate
 {
     protected $builder;
     
-    public function __construct($config)
+    public function __construct($database, $root, $config)
     {
-        $this->builder = $this->buildBuilder($config);
+        $this->builder = $this->buildBuilder($database, $root, $config);
     }
     
     public function builder()
@@ -26,8 +26,8 @@ class Migrate
         return $this->builder->migrator($name);
     }
     
-    protected function buildBuilder($config)
+    protected function buildBuilder($database, $root, $config)
     {
-        return new Migrate\Builder($config);
+        return new Migrate\Builder($database, $root, $config);
     }
 }

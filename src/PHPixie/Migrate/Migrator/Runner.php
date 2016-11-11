@@ -1,6 +1,6 @@
 <?php
 
-namespace PHPixie\Migrate;
+namespace PHPixie\Migrate\Migrator;
 
 use PHPixie\Console\Exception\CommandException;
 
@@ -17,14 +17,14 @@ class Runner
     
     public function run($file)
     {
-        $basename = patinfo($file, PATHINFO_BASENAME);
-        $extension = strtolower(patinfo($file, PATHINFO_BASENAME));
+        $fileName = pathinfo($file, PATHINFO_FILENAME);
+        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
         
         if(!in_array($extension, array('php', 'sql'))) {
-            throw new CommandException("Migration $basename is neither a .php nor a .sql file");
+            throw new CommandException("Migration $fileName is neither a .php nor a .sql file");
         }
         
-        $this->cliContext->writeLine("Running $basename");
+        $this->output->message("Running $fileName");
         $method = 'run'.ucfirst($extension).'Migration';
         $this->$method($file);
     }
@@ -37,8 +37,7 @@ class Runner
     public function runSqlMigration($file)
     {
         $sql = file_get_contents($file);
-        $statements = preg_split("#^--statement#", $sql);
-        
+        $statements = preg_split("#^-- statement#m", $sql);
         foreach($statements as $sql) {
             $sql = trim($sql);
             $sql = rtrim($sql, ';');
