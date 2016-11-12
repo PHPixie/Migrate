@@ -25,7 +25,7 @@ class Files
                 continue;
             }
             
-            $fileName = strtolower(pathinfo($file, PATHINFO_FILENAME));
+            $fileName = pathinfo($file, PATHINFO_FILENAME);
             if(isset($files[$fileName])) {
                 throw new Exception("Multiple files with name $fileName present");
             }
