@@ -18,7 +18,7 @@ class Runner
     public function run($file)
     {
         $fileName = pathinfo($file, PATHINFO_FILENAME);
-        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $extension = pathinfo($file, PATHINFO_EXTENSION);
         
         if(!in_array($extension, array('php', 'sql'))) {
             throw new CommandException("Migration $fileName is neither a .php nor a .sql file");

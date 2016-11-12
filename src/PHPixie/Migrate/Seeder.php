@@ -45,7 +45,7 @@ class Seeder
     public function getData($file)
     {
         $fileName = pathinfo($file, PATHINFO_FILENAME);
-        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $extension = pathinfo($file, PATHINFO_EXTENSION);
         
         if(!in_array($extension, array('php', 'json'))) {
             throw new CommandException("Migration $fileName is neither a .php nor a .json file");

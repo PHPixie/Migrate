@@ -39,14 +39,14 @@ class Migrator
         $files = $this->builder->files()->getFileMap($path);
         
         uksort($files, function($a, $b) {
-            return strcmp(strtolower($a), strtolower($b));
+            return strcmp($a, $b);
         });
         
         $lastMigration = $this->lastMigration();
         $pending = array();
         
         foreach($files as $name => $file) {
-            if(strcmp($name, strtolower($lastMigration)) > 0) {
+            if(strcmp($name, $lastMigration) > 0) {
                 $pending[$name] = $file;
             }
         }
