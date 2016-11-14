@@ -50,7 +50,7 @@ class Migrator
         $pending = array();
         
         foreach($files as $name => $file) {
-            if(strcmp($name, $lastMigration) > 0) {
+            if(strnatcmp($name, $lastMigration) > 0) {
                 $pending[$name] = $file;
             }
         }
