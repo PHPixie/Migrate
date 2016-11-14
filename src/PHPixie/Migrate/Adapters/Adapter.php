@@ -124,4 +124,9 @@ abstract class Adapter
         
         return $table;
     }
+    
+    public function connection()
+    {
+        return $this->connection;
+    }
 }
