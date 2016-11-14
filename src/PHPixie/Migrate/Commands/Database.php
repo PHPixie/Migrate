@@ -30,10 +30,6 @@ class Database extends Command
         $config->argument('config')
             ->description("Migration configuration name, defaults to 'default'");
         
-        $config->option('drop')
-            ->flag()
-            ->description("A safety flag aims to prevent accidental dropping of the database");
-
         parent::__construct($config);
     }
 
@@ -59,10 +55,6 @@ class Database extends Command
     
     protected function drop($migrator, $optionData)
     {
-        if(!$optionData->get('drop')) {
-            throw new CommandException("If you really want to drop the database rerun this command with --drop");
-        }
-        
         $migrator->dropDatabase();
         $this->writeLine("Database succesfully dropped or does not exist");
     }
