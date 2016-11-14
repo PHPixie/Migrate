@@ -10,7 +10,7 @@ use PHPixie\Slice\Data;
 use PHPixie\Migrate\Exception;
 use PHPixie\Console\Exception\CommandException;
 
-class Run extends Command
+class Migrate extends Command
 {
     /**
      * @var Builder

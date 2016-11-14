@@ -13,12 +13,12 @@ class Commands extends \PHPixie\Console\Registry\Provider\Implementation
     
     public function commandNames()
     {
-        return array('run', 'database', 'seed');
+        return array('migrate', 'database', 'seed');
     }
     
-    public function buildRunCommand($config)
+    public function buildMigrateCommand($config)
     {
-        return new Commands\Run($this->builder, $config);
+        return new Commands\Migrate($this->builder, $config);
     }
     
     public function buildSeedCommand($config)
