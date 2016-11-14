@@ -53,6 +53,11 @@ class Runner
     
     public function write($string)
     {
-        $this->output->message($sql);
+        $this->output->message($string);
+    }
+    
+    public function connection()
+    {
+        return $this->adapter->connection();
     }
 }

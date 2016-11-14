@@ -2,6 +2,8 @@
 
 namespace PHPixie\Migrate;
 
+use PHPixie\Console\Exception\CommandException;
+
 class Seeder
 {
     protected $builder;
@@ -70,5 +72,10 @@ class Seeder
     public function getPhpData($file)
     {
         return require $file;
+    }
+    
+    public function connection()
+    {
+        return $this->adapter->connection();
     }
 }

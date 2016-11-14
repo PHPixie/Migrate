@@ -11,9 +11,6 @@ abstract class Adapter
     
     protected $quoteCharacter;
     
-    protected $defaultMigrationTable = '__migrate';
-    protected $lastMigrationField = 'lastMigration';
-    
     public function __construct($connection)
     {
         $this->connection = $connection;
@@ -24,35 +21,35 @@ abstract class Adapter
         return $this->quoteCharacter.$str.$this->quoteCharacter;
     }
     
-    public function getLastMigration()
+    public function getLastMigration($table, $field)
     {
-        $table = $this->requireMigrationTable();
+        $this->requireMigrationTable($table, $field);
         
         $lastMigration = $this->connection->selectQuery()
             ->table($table)
-            ->fields(array($this->lastMigrationField))
+            ->fields(array($field))
             ->execute()
-            ->getField($this->lastMigrationField);
+            ->getField($field);
         
         $last = empty($lastMigration) ? null : $lastMigration[0];
         return $last;
     }
     
-    public function setLastMigration($migration)
+    public function setLastMigration($table, $field, $migration)
     {
-        $table = $this->requireMigrationTable();
+        $this->requireMigrationTable($table, $field);
         
         $lastMigration = $this->connection->selectQuery()
             ->table($table)
-            ->fields(array($this->lastMigrationField))
+            ->fields(array($field))
             ->execute()
-            ->getField($this->lastMigrationField);
+            ->getField($field);
         
         if(count($lastMigration) === 0) {
             $this->connection->insertQuery()
                 ->table($table)
                 ->data(array(
-                    $this->lastMigrationField => $migration
+                    $field => $migration
                 ))
                 ->execute();
             return;
@@ -61,7 +58,7 @@ abstract class Adapter
         $this->connection->updateQuery()
             ->table($table)
             ->set(array(
-                $this->lastMigrationField => $migration
+                $field => $migration
             ))
             ->execute();
     }
@@ -116,16 +113,13 @@ abstract class Adapter
          $pdo->exec('CREATE DATABASE IF NOT EXISTS '.$this->quote($database));
     }
     
-    protected function requireMigrationTable()
+    protected function requireMigrationTable($table, $field)
     {
-        $config = $this->connection->config();
-        $table = $config->get('table', $this->defaultMigrationTable);
-        
         $this->execute(sprintf("CREATE TABLE IF NOT EXISTS %s(
                 %s VARCHAR(255)
             )",
             $this->quote($table),
-            $this->quote($this->lastMigrationField)
+            $this->quote($field)
         ));
         
         return $table;
