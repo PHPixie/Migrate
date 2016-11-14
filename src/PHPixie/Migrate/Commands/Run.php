@@ -37,7 +37,7 @@ class Run extends Command
         
         try{
             $executed = $migrator->migrate($output);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             throw new CommandException($e->getMessage());
         }
         

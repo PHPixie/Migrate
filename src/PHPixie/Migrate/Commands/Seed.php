@@ -41,7 +41,7 @@ class Seed extends Command
         
         try{
             $seeder->seed($output, $optionData->get('truncate', false));
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             throw new CommandException($e->getMessage());
         }
         
