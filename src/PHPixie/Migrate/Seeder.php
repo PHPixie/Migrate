@@ -71,7 +71,12 @@ class Seeder
     
     public function getPhpData($file)
     {
-        return require $file;
+        $data = require $file;
+        if(empty($data)) {
+            $data = array();
+        }
+        
+        return $data;
     }
     
     public function connection()
