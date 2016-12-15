@@ -110,7 +110,7 @@ abstract class Adapter
         $config = $this->connection->config();
         $database = $config->getRequired('database');
         
-         $pdo->exec('CREATE DATABASE IF NOT EXISTS '.$this->quote($database));
+        $pdo->exec('CREATE DATABASE IF NOT EXISTS '.$this->quote($database));
     }
     
     protected function requireMigrationTable($table, $field)
