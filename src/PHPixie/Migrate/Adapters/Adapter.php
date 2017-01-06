@@ -129,4 +129,14 @@ abstract class Adapter
     {
         return $this->connection;
     }
+
+    public function disableForeignKeyCheck()
+    {
+
+    }
+
+    public function enableForeignKeyCheck()
+    {
+
+    }
 }

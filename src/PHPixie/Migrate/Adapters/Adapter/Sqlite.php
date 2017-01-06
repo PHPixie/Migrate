@@ -30,4 +30,15 @@ class Sqlite extends Adapter
     {
         $this->execute('DELETE FROM '.$this->quote($table));
     }
+
+
+    public function disableForeignKeyCheck()
+    {
+        $this->execute("PRAGMA foreign_keys = OFF");
+    }
+
+    public function enableForeignKeyCheck()
+    {
+        $this->execute("PRAGMA foreign_keys = ON");
+    }
 }

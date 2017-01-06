@@ -29,18 +29,24 @@ class Seeder
                 }
             }
         }
-        
-        foreach($files as $table => $file) {
-            $data = $this->getData($file);
-            $count = count($data);
-            
-            if($truncateTables) {
-                $output->message("Truncating '$table'");
-                $this->adapter->truncateTable($table);
+
+        $this->adapter->disableForeignKeyCheck();
+
+        try {
+            foreach ($files as $table => $file) {
+                $data = $this->getData($file);
+                $count = count($data);
+
+                if ($truncateTables) {
+                    $output->message("Truncating '$table'");
+                    $this->adapter->truncateTable($table);
+                }
+
+                $output->message("Inserting $count item(s) into '$table'");
+                $this->adapter->insertData($table, $data);
             }
-            
-            $output->message("Inserting $count item(s) into '$table'");
-            $this->adapter->insertData($table, $data);
+        } finally {
+            $this->adapter->disableForeignKeyCheck();
         }
     }
     
