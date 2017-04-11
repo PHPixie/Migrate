@@ -13,8 +13,12 @@ class Files
     
     public function getFileMap($path)
     {
-        $path = $this->rootPath->path($path.'/');
-        
+        $path = $this->rootPath->path($path);
+        return $this->getRecursiveFileMap(rtrim($path, '\\/'));
+    }
+    
+    protected function getRecursiveFileMap($path)
+    {
         if(!file_exists($path) || !is_dir($path)) {
             throw new Exception("Path $path is not a directory");
         }
@@ -30,9 +34,17 @@ class Files
                 throw new Exception("Multiple files with name $fileName present");
             }
             
-            $filePath = $path.$file;
+            $filePath = $path.'/'.$file;
+            
+            if(is_dir($filePath)) {
+                foreach($this->getRecursiveFileMap($filePath) as $subName => $subPath) {
+                    $files[$file.'/'.$subName] = $subPath;
+                }
+                continue;
+            }
+            
             if(!is_file($filePath)) {
-                throw new Exception("Path $filePath is not a regular file");
+                throw new Exception("Path $filePath is not a regular file or directory");
             }
             
             $files[$fileName] = $filePath;
