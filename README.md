@@ -60,7 +60,7 @@ handling multiple databases, or different sets of seed data.
 You can now create and destroy your database using the command line.
 This is done using the `framework:database` command:
 
-```
+```php
 framework:database ACTION [ CONFIG ]
 Create or drop a database
 
@@ -139,7 +139,7 @@ you can have your files in such structure: `/2016/03/22/fairies_table.sql`.
 
 To execute the migrations use the `framework:migrate` command:
 
-```
+```php
 framework:migrate [ CONFIG ]
 Run migrations on the database
 
@@ -229,7 +229,7 @@ $this->connection()->insertQuery()
 
 To insert the seed data use the `framework:seed` command:
 
-```
+```php
 framework:seed [ --truncate ] [ CONFIG ]
 Seed the database with data
 
