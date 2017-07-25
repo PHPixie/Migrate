@@ -15,7 +15,7 @@
     "require": {
         "phpixie/console": "~3.3",
         "phpixie/slice": "~3.0",
-        "phpixie/database": "~3.0"
+        "phpixie/database": "dev-arrays@dev"
     },
     "require-dev": {
         "phpixie/test": "~3.0"
